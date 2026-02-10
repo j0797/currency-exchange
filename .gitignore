@@ -31,6 +31,17 @@ build/
 ### VS Code ###
 .vscode/
 
+### Database files ###
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+### Logs ###
+*.log
+
 ### Mac OS ###
 .DS_Store
-EOF
+
+# Windows
+Thumbs.db
