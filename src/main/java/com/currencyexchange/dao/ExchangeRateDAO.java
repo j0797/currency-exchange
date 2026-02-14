@@ -33,6 +33,7 @@ public class ExchangeRateDAO {
     private static final String SQL_FIND_BY_PAIR = SQL_SELECT_ALL + " WHERE bc.code = ? AND tc.code = ?";
     private static final String SQL_INSERT =
             "INSERT INTO exchange_rates (base_currency_id, target_currency_id, rate) VALUES (?, ?, ?)";
+    private static final String SQL_UPDATE_BY_ID = "UPDATE exchange_rates SET rate = ? WHERE id = ?";
 
     public List<ExchangeRate> findAll() throws SQLException {
         List<ExchangeRate> list = new ArrayList<>();
@@ -88,6 +89,15 @@ public class ExchangeRateDAO {
                 }
             }
             return rate;
+        }
+    }
+
+    public boolean update(ExchangeRate rate) throws SQLException {
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SQL_UPDATE_BY_ID)) {
+            pstmt.setBigDecimal(1, rate.getRate());
+            pstmt.setInt(2, rate.getId());
+            return pstmt.executeUpdate() > 0;
         }
     }
 }
