@@ -55,9 +55,10 @@ public class CurrencyDAO {
             pstmt.setString(3, currency.getSign());
             pstmt.executeUpdate();
 
-            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    currency.setId(generatedKeys.getInt(1));
+            try (Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery("SELECT last_insert_rowid()")) {
+                if (rs.next()) {
+                    currency.setId(rs.getInt(1));
                 }
             }
             return currency;
