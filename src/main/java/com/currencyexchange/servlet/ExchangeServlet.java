@@ -33,6 +33,10 @@ public class ExchangeServlet extends AbstractServlet {
             sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid amount format");
             return;
         }
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Amount must be positive");
+            return;
+        }
 
         try {
             ConversionResponseDto result = conversionService.convert(from.toUpperCase(), to.toUpperCase(), amount);
