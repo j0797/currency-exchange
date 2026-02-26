@@ -1,6 +1,5 @@
 package com.currencyexchange.servlet;
 
-import com.currencyexchange.dto.request.CurrencyRequestDto;
 import com.currencyexchange.dto.response.CurrencyResponseDto;
 import com.currencyexchange.exception.DatabaseException;
 import com.currencyexchange.exception.ValidationException;
@@ -35,16 +34,16 @@ public class CurrenciesServlet extends AbstractServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            CurrencyRequestDto requestDto = gson.fromJson(req.getReader(), CurrencyRequestDto.class);
+            String code = req.getParameter("code");
+            String fullName = req.getParameter("name");
+            String sign = req.getParameter("sign");
 
-            Currency currency = new Currency();
-            currency.setCode(requestDto.getCode());
-            currency.setFullName(requestDto.getFullName());
-            currency.setSign(requestDto.getSign());
-
+            if (code == null || fullName == null || sign == null) {
+                throw new ValidationException("A required field is missing");
+            }
+            Currency currency = new Currency(null, code, fullName, sign);
             Currency created = currencyService.createCurrency(currency);
             CurrencyResponseDto responseDto = CurrencyMapper.toDto(created);
-
             writeJson(resp, responseDto, HttpServletResponse.SC_CREATED);
         } catch (ValidationException e) {
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());

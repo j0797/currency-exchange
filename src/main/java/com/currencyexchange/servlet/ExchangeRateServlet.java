@@ -7,14 +7,15 @@ import com.currencyexchange.exception.ValidationException;
 import com.currencyexchange.mapper.ExchangeRateMapper;
 import com.currencyexchange.model.ExchangeRate;
 import com.currencyexchange.service.ExchangeRateService;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 @WebServlet("/exchangeRate/*")
 public class ExchangeRateServlet extends AbstractServlet {
@@ -46,12 +47,34 @@ public class ExchangeRateServlet extends AbstractServlet {
             String baseCode = codes[0];
             String targetCode = codes[1];
 
-            JsonObject json = JsonParser.parseReader(req.getReader()).getAsJsonObject();
-            if (!json.has("rate")) {
-                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Missing 'rate' field");
-                return;
+            StringBuilder body = new StringBuilder();
+            String line;
+            try (BufferedReader reader = req.getReader()) {
+                while ((line = reader.readLine()) != null) {
+                    body.append(line);
+                }
             }
-            BigDecimal newRate = json.get("rate").getAsBigDecimal();
+            String bodyStr = body.toString();
+
+            String rateParam = null;
+            String[] pairs = bodyStr.split("&");
+            for (String pair : pairs) {
+                String[] kv = pair.split("=");
+                if (kv.length == 2 && "rate".equals(kv[0])) {
+                    rateParam = URLDecoder.decode(kv[1], StandardCharsets.UTF_8);
+                    break;
+                }
+            }
+
+            if (rateParam == null) {
+                throw new ValidationException("Missing 'rate' field");
+            }
+            BigDecimal newRate;
+            try {
+                newRate = new BigDecimal(rateParam);
+            } catch (NumberFormatException e) {
+                throw new ValidationException("Invalid rate format");
+            }
 
             exchangeRateService.updateExchangeRate(baseCode, targetCode, newRate);
             ExchangeRate updated = exchangeRateService.findExchangeRateByPair(baseCode, targetCode);
