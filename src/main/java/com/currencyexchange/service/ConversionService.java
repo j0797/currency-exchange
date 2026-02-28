@@ -91,8 +91,8 @@ public class ConversionService {
     }
 
     private ConversionResponseDto buildConversionResponse(Currency from, Currency to, BigDecimal rate, BigDecimal amount) {
-        CurrencyResponseDto fromDto = new CurrencyResponseDto(from.getId(), from.getCode(), from.getFullName(), from.getSign());
-        CurrencyResponseDto toDto = new CurrencyResponseDto(to.getId(), to.getCode(), to.getFullName(), to.getSign());
+        CurrencyResponseDto fromDto = new CurrencyResponseDto(from.getId(), from.getCode(), from.getName(), from.getSign());
+        CurrencyResponseDto toDto = new CurrencyResponseDto(to.getId(), to.getCode(), to.getName(), to.getSign());
         BigDecimal convertedAmount = amount.multiply(rate).setScale(2, RoundingMode.HALF_UP);
         return new ConversionResponseDto(fromDto, toDto, rate, amount, convertedAmount);
     }

@@ -51,7 +51,7 @@ public class CurrencyDAO {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, currency.getCode().toUpperCase());
-            pstmt.setString(2, currency.getFullName());
+            pstmt.setString(2, currency.getName());
             pstmt.setString(3, currency.getSign());
             pstmt.executeUpdate();
 

@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
-    private static final String DB_URL = "jdbc:sqlite:/Users/uliafilippova/IdeaProjects/currency-exchange/data/database.db";
+    private static final String DB_URL = "jdbc:sqlite:/opt/tomcat11/data/database.db";
     static {
         try {
             Class.forName("org.sqlite.JDBC");

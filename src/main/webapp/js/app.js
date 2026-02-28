@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    const host = "http://localhost:8080/currency-exchange"
+    const host = "/currency-exchange-1.0-SNAPSHOT/";
 
     // Fetch the list of currencies and populate the select element
     function requestCurrencies() {

@@ -8,6 +8,6 @@ public class CurrencyMapper {
     }
 
     public static CurrencyResponseDto toDto(Currency currency) {
-        return new CurrencyResponseDto(currency.getId(), currency.getCode(), currency.getFullName(), currency.getSign());
+        return new CurrencyResponseDto(currency.getId(), currency.getCode(), currency.getName(), currency.getSign());
     }
 }

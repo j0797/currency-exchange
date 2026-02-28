@@ -6,6 +6,6 @@ import lombok.Value;
 public class CurrencyResponseDto {
     int id;
     String code;
-    String fullName;
+    String name;
     String sign;
 }

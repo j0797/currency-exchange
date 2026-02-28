@@ -56,7 +56,7 @@ public class CurrencyService {
         if (currency.getCode() == null || currency.getCode().length() != 3) {
             throw new ValidationException("Currency code must be exactly 3 characters");
         }
-        if (currency.getFullName() == null || currency.getFullName().isBlank()) {
+        if (currency.getName() == null || currency.getName().isBlank()) {
             throw new ValidationException("Currency full name is required");
         }
         if (currency.getSign() == null || currency.getSign().isBlank()) {

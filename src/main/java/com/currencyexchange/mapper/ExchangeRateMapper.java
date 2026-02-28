@@ -13,13 +13,13 @@ public class ExchangeRateMapper {
         CurrencyResponseDto base = new CurrencyResponseDto(
                 rate.getBaseCurrency().getId(),
                 rate.getBaseCurrency().getCode(),
-                rate.getBaseCurrency().getFullName(),
+                rate.getBaseCurrency().getName(),
                 rate.getBaseCurrency().getSign()
         );
         CurrencyResponseDto target = new CurrencyResponseDto(
                 rate.getTargetCurrency().getId(),
                 rate.getTargetCurrency().getCode(),
-                rate.getTargetCurrency().getFullName(),
+                rate.getTargetCurrency().getName(),
                 rate.getTargetCurrency().getSign()
         );
         return new ExchangeRateResponseDto(rate.getId(), base, target, rate.getRate());
