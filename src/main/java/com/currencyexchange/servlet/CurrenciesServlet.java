@@ -41,12 +41,20 @@ public class CurrenciesServlet extends AbstractServlet {
             if (code == null || fullName == null || sign == null) {
                 throw new ValidationException("A required field is missing");
             }
+            if (code.trim().isEmpty() || fullName.trim().isEmpty() || sign.trim().isEmpty()) {
+                throw new ValidationException("Fields cannot be empty or contain only spaces");
+            }
+
             Currency currency = new Currency(null, code, fullName, sign);
             Currency created = currencyService.createCurrency(currency);
             CurrencyResponseDto responseDto = CurrencyMapper.toDto(created);
             writeJson(resp, responseDto, HttpServletResponse.SC_CREATED);
         } catch (ValidationException e) {
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            if (e.getMessage().contains("already exists")) {
+                sendError(resp, HttpServletResponse.SC_CONFLICT, e.getMessage());
+            } else {
+                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            }
         } catch (DatabaseException e) {
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
         }

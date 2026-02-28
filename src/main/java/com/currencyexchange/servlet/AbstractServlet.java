@@ -12,7 +12,7 @@ public abstract class AbstractServlet extends HttpServlet {
     protected void sendError(HttpServletResponse resp, int status, String message) throws IOException {
         resp.setStatus(status);
         resp.setContentType("application/json");
-        resp.getWriter().write("{\"error\":\"" + message + "\"}");
+        resp.getWriter().write("{\"message\":\"" + message + "\"}");
     }
 
     protected void writeJson(HttpServletResponse resp, Object data, int status) throws IOException {

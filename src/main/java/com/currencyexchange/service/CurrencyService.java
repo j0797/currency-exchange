@@ -42,11 +42,11 @@ public class CurrencyService {
     public Currency createCurrency(Currency currency) throws DatabaseException, ValidationException {
         validateCurrency(currency);
         try {
-        Optional<Currency> existing = currencyDAO.findByCode(currency.getCode());
-        if (existing.isPresent()) {
-            throw new ValidationException("Currency with code " + currency.getCode() + " already exists");
-        }
-        return currencyDAO.save(currency);
+            Optional<Currency> existing = currencyDAO.findByCode(currency.getCode());
+            if (existing.isPresent()) {
+                throw new ValidationException("Currency with code " + currency.getCode() + " already exists");
+            }
+            return currencyDAO.save(currency);
         } catch (SQLException e) {
             throw new DatabaseException("Database error while creating currency", e);
         }
@@ -61,6 +61,9 @@ public class CurrencyService {
         }
         if (currency.getSign() == null || currency.getSign().isBlank()) {
             throw new ValidationException("Currency sign is required");
+        }
+        if (currency.getSign().length() > 3) {
+            throw new ValidationException("Currency sign is too long (max 5 characters)");
         }
     }
 }

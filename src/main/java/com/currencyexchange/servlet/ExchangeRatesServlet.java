@@ -44,6 +44,10 @@ public class ExchangeRatesServlet extends AbstractServlet {
             if (baseCurrencyCode == null || targetCurrencyCode == null || rateParam == null) {
                 throw new ValidationException("Missing required fields");
             }
+            if (baseCurrencyCode.trim().isEmpty() || targetCurrencyCode.trim().isEmpty()) {
+                throw new ValidationException("Currency codes cannot be empty or contain only spaces");
+            }
+
             BigDecimal rate;
             try {
                 rate = new BigDecimal(rateParam);
@@ -55,7 +59,11 @@ public class ExchangeRatesServlet extends AbstractServlet {
             ExchangeRateResponseDto responseDto = ExchangeRateMapper.toDto(created);
             writeJson(resp, responseDto, HttpServletResponse.SC_CREATED);
         } catch (ValidationException e) {
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            if (e.getMessage().contains("already exists")) {
+                sendError(resp, HttpServletResponse.SC_CONFLICT, e.getMessage());
+            } else {
+                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            }
         } catch (NotFoundException e) {
             sendError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (DatabaseException e) {
