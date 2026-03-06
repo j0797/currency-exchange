@@ -7,10 +7,12 @@ import com.currencyexchange.service.ConversionService;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 
+@Slf4j
 @WebServlet("/exchange")
 public class ExchangeServlet extends AbstractServlet {
     private final ConversionService conversionService = new ConversionService();
@@ -38,12 +40,16 @@ public class ExchangeServlet extends AbstractServlet {
             return;
         }
 
+        log.debug("Processing conversion: {} {} -> {}", amount, from, to);
+
         try {
             ConversionResponseDto result = conversionService.convert(from.toUpperCase(), to.toUpperCase(), amount);
+            log.info("Conversion successful: {} {} -> {} {}", amount, from, result.getConvertedAmount(), to);
             writeJson(response, result, HttpServletResponse.SC_OK);
         } catch (NotFoundException e) {
             sendError(response, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (DatabaseException e) {
+            log.error("Database error in GET /exchange", e);
             sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
         }
     }

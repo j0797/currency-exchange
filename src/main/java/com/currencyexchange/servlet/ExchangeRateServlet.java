@@ -10,6 +10,7 @@ import com.currencyexchange.service.ExchangeRateService;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,16 +18,19 @@ import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
+@Slf4j
 @WebServlet("/exchangeRate/*")
 public class ExchangeRateServlet extends AbstractServlet {
     private final ExchangeRateService exchangeRateService = new ExchangeRateService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String baseCode = null;
+        String targetCode = null;
         try {
             String[] codes = parseCurrencyPair(req.getPathInfo());
-            String baseCode = codes[0];
-            String targetCode = codes[1];
+            baseCode = codes[0];
+            targetCode = codes[1];
 
             ExchangeRate rate = exchangeRateService.findExchangeRateByPair(baseCode, targetCode);
             ExchangeRateResponseDto dto = ExchangeRateMapper.toDto(rate);
@@ -36,16 +40,20 @@ public class ExchangeRateServlet extends AbstractServlet {
         } catch (NotFoundException e) {
             sendError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (DatabaseException e) {
+            log.error("Database error in GET /exchangeRate/{}{}", baseCode, targetCode, e);
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
         }
     }
 
     @Override
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
+        String baseCode = null;
+        String targetCode = null;
         try {
             String[] codes = parseCurrencyPair(req.getPathInfo());
-            String baseCode = codes[0];
-            String targetCode = codes[1];
+            baseCode = codes[0];
+            targetCode = codes[1];
 
             StringBuilder body = new StringBuilder();
             String line;
@@ -85,6 +93,7 @@ public class ExchangeRateServlet extends AbstractServlet {
         } catch (ValidationException e) {
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (DatabaseException e) {
+            log.error("Database error in PATCH /exchangeRate/{}{}", baseCode, targetCode, e);
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
         }
     }

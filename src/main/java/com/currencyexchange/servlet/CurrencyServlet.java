@@ -10,17 +10,20 @@ import com.currencyexchange.service.CurrencyService;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
+@Slf4j
 @WebServlet("/currency/*")
 public class CurrencyServlet extends AbstractServlet {
     private final CurrencyService currencyService = new CurrencyService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String code = null;
         try {
-            String code = parseCurrencyCode(req.getPathInfo());
+            code = parseCurrencyCode(req.getPathInfo());
             Currency currency = currencyService.findCurrencyByCode(code);
             CurrencyResponseDto dto = CurrencyMapper.toDto(currency);
             writeJson(resp, dto, HttpServletResponse.SC_OK);
@@ -29,6 +32,7 @@ public class CurrencyServlet extends AbstractServlet {
         } catch (NotFoundException e) {
             sendError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (DatabaseException e) {
+            log.error("Database error in GET /currency/* for code: {}", code, e);
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
         }
     }

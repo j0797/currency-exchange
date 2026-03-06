@@ -9,11 +9,13 @@ import com.currencyexchange.service.CurrencyService;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @WebServlet("/currencies")
 public class CurrenciesServlet extends AbstractServlet {
     private final CurrencyService currencyService = new CurrencyService();
@@ -27,6 +29,7 @@ public class CurrenciesServlet extends AbstractServlet {
 
             writeJson(resp, responseList, HttpServletResponse.SC_OK);
         } catch (DatabaseException e) {
+            log.error("Database error in GET /currencies", e);
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
         }
     }
@@ -56,6 +59,7 @@ public class CurrenciesServlet extends AbstractServlet {
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
             }
         } catch (DatabaseException e) {
+            log.error("Database error in POST /currencies", e);
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
         }
     }
