@@ -48,7 +48,7 @@ public class CurrenciesServlet extends AbstractServlet {
                 throw new ValidationException("Fields cannot be empty or contain only spaces");
             }
 
-            Currency currency = new Currency(null, code, fullName, sign);
+            Currency currency = new Currency(code, fullName, sign);
             Currency created = currencyService.createCurrency(currency);
             CurrencyResponseDto responseDto = CurrencyMapper.toDto(created);
             writeJson(resp, responseDto, HttpServletResponse.SC_CREATED);

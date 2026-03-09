@@ -1,14 +1,14 @@
 package com.currencyexchange.model;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class ExchangeRate {
     private Integer id;
     private Currency baseCurrency;
