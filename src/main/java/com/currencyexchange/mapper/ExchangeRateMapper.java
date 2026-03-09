@@ -3,11 +3,10 @@ package com.currencyexchange.mapper;
 import com.currencyexchange.dto.response.CurrencyResponseDto;
 import com.currencyexchange.dto.response.ExchangeRateResponseDto;
 import com.currencyexchange.model.ExchangeRate;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class ExchangeRateMapper {
-
-    private ExchangeRateMapper() {
-    }
 
     public static ExchangeRateResponseDto toDto(ExchangeRate rate) {
         CurrencyResponseDto base = new CurrencyResponseDto(

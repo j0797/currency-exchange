@@ -2,7 +2,7 @@ package com.currencyexchange.dao;
 
 import com.currencyexchange.model.ExchangeRate;
 import com.currencyexchange.util.DatabaseConnection;
-import com.currencyexchange.util.ResultSetConverter;
+import com.currencyexchange.mapper.ResultSetMapper;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class ExchangeRateDAO {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(SQL_SELECT_ALL)) {
             while (rs.next()) {
-                list.add(ResultSetConverter.mapExchangeRate(rs));
+                list.add(ResultSetMapper.mapExchangeRate(rs));
             }
         }
         return list;
@@ -53,7 +53,7 @@ public class ExchangeRateDAO {
             pstmt.setInt(1, id);
             try (ResultSet rs = pstmt.executeQuery()) {
                 return (rs.next())
-                        ? Optional.of(ResultSetConverter.mapExchangeRate(rs))
+                        ? Optional.of(ResultSetMapper.mapExchangeRate(rs))
                         : Optional.empty();
             }
         }
@@ -66,7 +66,7 @@ public class ExchangeRateDAO {
             pstmt.setString(2, targetCode.toUpperCase());
             try (ResultSet rs = pstmt.executeQuery()) {
                 return (rs.next())
-                        ? Optional.of(ResultSetConverter.mapExchangeRate(rs))
+                        ? Optional.of(ResultSetMapper.mapExchangeRate(rs))
                         : Optional.empty();
             }
         }

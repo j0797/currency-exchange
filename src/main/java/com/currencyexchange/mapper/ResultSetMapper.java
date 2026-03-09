@@ -1,4 +1,4 @@
-package com.currencyexchange.util;
+package com.currencyexchange.mapper;
 
 import com.currencyexchange.model.Currency;
 import com.currencyexchange.model.ExchangeRate;
@@ -6,9 +6,7 @@ import com.currencyexchange.model.ExchangeRate;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ResultSetConverter {
-    private ResultSetConverter() {
-    }
+public class ResultSetMapper {
 
     public static Currency mapCurrency(ResultSet rs) throws SQLException {
         Currency currency = new Currency();

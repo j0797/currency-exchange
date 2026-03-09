@@ -2,7 +2,7 @@ package com.currencyexchange.dao;
 
 import com.currencyexchange.model.Currency;
 import com.currencyexchange.util.DatabaseConnection;
-import com.currencyexchange.util.ResultSetConverter;
+import com.currencyexchange.mapper.ResultSetMapper;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ public class CurrencyDAO {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(SQL_FIND_ALL)) {
             while (rs.next()) {
-                list.add(ResultSetConverter.mapCurrency(rs));
+                list.add(ResultSetMapper.mapCurrency(rs));
             }
         }
         return list;
@@ -32,7 +32,7 @@ public class CurrencyDAO {
              PreparedStatement pstmt = conn.prepareStatement(SQL_FIND_BY_CODE)) {
             pstmt.setString(1, code.toUpperCase());
             try (ResultSet rs = pstmt.executeQuery()) {
-                return rs.next() ? Optional.of(ResultSetConverter.mapCurrency(rs)) : Optional.empty();
+                return rs.next() ? Optional.of(ResultSetMapper.mapCurrency(rs)) : Optional.empty();
             }
         }
     }
@@ -42,7 +42,7 @@ public class CurrencyDAO {
              PreparedStatement pstmt = conn.prepareStatement(SQL_FIND_BY_ID)) {
             pstmt.setInt(1, id);
             try (ResultSet rs = pstmt.executeQuery()) {
-                return (rs.next()) ? Optional.of(ResultSetConverter.mapCurrency(rs)) : Optional.empty();
+                return (rs.next()) ? Optional.of(ResultSetMapper.mapCurrency(rs)) : Optional.empty();
             }
         }
     }

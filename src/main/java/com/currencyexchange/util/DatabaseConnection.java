@@ -3,7 +3,9 @@ package com.currencyexchange.util;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class DatabaseConnection {
     private static final String DB_URL = "jdbc:sqlite:/opt/tomcat11/data/database.db";
     static {
@@ -14,8 +16,6 @@ public class DatabaseConnection {
         }
     }
 
-    private DatabaseConnection() {
-    }
 
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(DB_URL);
