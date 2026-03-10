@@ -1,9 +1,9 @@
 package com.currencyexchange.servlet;
 
-import com.currencyexchange.dto.response.ConversionResponseDto;
+import com.currencyexchange.dto.response.ExchangeResponseDto;
 import com.currencyexchange.exception.DatabaseException;
 import com.currencyexchange.exception.NotFoundException;
-import com.currencyexchange.service.ConversionService;
+import com.currencyexchange.service.ExchangeService;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @Slf4j
 @WebServlet("/exchange")
 public class ExchangeServlet extends AbstractServlet {
-    private final ConversionService conversionService = new ConversionService();
+    private final ExchangeService conversionService = new ExchangeService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -43,7 +43,7 @@ public class ExchangeServlet extends AbstractServlet {
         log.debug("Processing conversion: {} {} -> {}", amount, from, to);
 
         try {
-            ConversionResponseDto result = conversionService.convert(from.toUpperCase(), to.toUpperCase(), amount);
+            ExchangeResponseDto result = conversionService.convert(from.toUpperCase(), to.toUpperCase(), amount);
             log.info("Conversion successful: {} {} -> {} {}", amount, from, result.convertedAmount(), to);
             writeJson(response, result, HttpServletResponse.SC_OK);
         } catch (NotFoundException e) {

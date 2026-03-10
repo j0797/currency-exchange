@@ -2,15 +2,14 @@ package com.currencyexchange.service;
 
 import com.currencyexchange.dao.CurrencyDao;
 import com.currencyexchange.dao.JdbcCurrencyDao;
+import com.currencyexchange.exception.AlreadyExistsException;
 import com.currencyexchange.exception.DatabaseException;
 import com.currencyexchange.exception.NotFoundException;
 import com.currencyexchange.exception.ValidationException;
 import com.currencyexchange.model.Currency;
 import lombok.extern.slf4j.Slf4j;
 
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 public class CurrencyService {
@@ -20,7 +19,7 @@ public class CurrencyService {
         log.info("Fetching all currencies");
         try {
             return currencyDao.findAll();
-        } catch (SQLException e) {
+        } catch (DatabaseException e) {
             log.error("Database error while fetching all currencies", e);
             throw new DatabaseException("Database error while fetching all currencies", e);
         }
@@ -34,7 +33,7 @@ public class CurrencyService {
                         log.warn("Currency not found: {}", code);
                         return new NotFoundException("Currency not found: " + code);
                     });
-        } catch (SQLException e) {
+        } catch (DatabaseException e) {
             log.error("Database error while fetching currency by code: {}", code, e);
             throw new DatabaseException("Database error while fetching currency by code", e);
         }
@@ -45,27 +44,24 @@ public class CurrencyService {
         try {
             return currencyDao.findById(id)
                     .orElseThrow(() -> new NotFoundException("Currency not found by id: " + id));
-        } catch (SQLException e) {
+        } catch (DatabaseException e) {
             log.error("Database error while fetching currency by id: {}", id, e);
             throw new DatabaseException("Database error while fetching currency by id", e);
         }
     }
 
-    public Currency createCurrency(Currency currency) throws DatabaseException, ValidationException {
-        log.info("Creating currency: {}", currency.getCode());
+    public Currency createCurrency(Currency currency) throws DatabaseException, ValidationException, AlreadyExistsException {
         validateCurrency(currency);
         try {
-            Optional<Currency> existing = currencyDao.findByCode(currency.getCode());
-            if (existing.isPresent()) {
-                log.warn("Attempt to create duplicate currency: {}", currency.getCode());
-                throw new ValidationException("Currency with code " + currency.getCode() + " already exists");
-            }
             Currency saved = currencyDao.save(currency);
             log.info("Currency created successfully: {} (id={})", saved.getCode(), saved.getId());
             return saved;
-        } catch (SQLException e) {
+        } catch (AlreadyExistsException e) {
+            log.warn("Attempt to create duplicate currency: {}", currency.getCode());
+            throw e;
+        } catch (DatabaseException e) {
             log.error("Database error while creating currency: {}", currency.getCode(), e);
-            throw new DatabaseException("Database error while creating currency", e);
+            throw e;
         }
     }
 
@@ -79,8 +75,8 @@ public class CurrencyService {
         if (currency.getSign() == null || currency.getSign().isBlank()) {
             throw new ValidationException("Currency sign is required");
         }
-        if (currency.getSign().length() > 5) {
-            throw new ValidationException("Currency sign is too long (max 5 characters)");
+        if (currency.getSign().length() > 3) {
+            throw new ValidationException("Currency sign is too long (max 3 characters)");
         }
     }
 }

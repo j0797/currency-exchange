@@ -2,6 +2,7 @@ package com.currencyexchange.service;
 
 import com.currencyexchange.dao.ExchangeRateDao;
 import com.currencyexchange.dao.JdbcExchangeRateDao;
+import com.currencyexchange.exception.AlreadyExistsException;
 import com.currencyexchange.exception.DatabaseException;
 import com.currencyexchange.exception.NotFoundException;
 import com.currencyexchange.exception.ValidationException;
@@ -10,9 +11,7 @@ import com.currencyexchange.model.ExchangeRate;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 public class ExchangeRateService {
@@ -23,7 +22,7 @@ public class ExchangeRateService {
         log.info("Fetching all exchange rates");
         try {
             return exchangeRateDao.findAll();
-        } catch (SQLException e) {
+        } catch (DatabaseException e) {
             log.error("Database error while fetching all exchange rates", e);
             throw new DatabaseException("Database error while fetching all exchange rates", e);
         }
@@ -34,7 +33,7 @@ public class ExchangeRateService {
         try {
             return exchangeRateDao.findById(id)
                     .orElseThrow(() -> new NotFoundException("Exchange rate not found with id: " + id));
-        } catch (SQLException e) {
+        } catch (DatabaseException e) {
             log.error("Database error while fetching exchange rate by id: {}", id, e);
             throw new DatabaseException("Database error while fetching exchange rate by id", e);
         }
@@ -47,14 +46,14 @@ public class ExchangeRateService {
             return exchangeRateDao.findByPair(baseCode, targetCode)
                     .orElseThrow(() -> new NotFoundException(
                             "Exchange rate not found for pair " + baseCode + "-" + targetCode));
-        } catch (SQLException e) {
+        } catch (DatabaseException e) {
             log.error("Database error while fetching exchange rate by pair: {}-{}", baseCode, targetCode, e);
             throw new DatabaseException("Database error while fetching exchange rate by pair", e);
         }
     }
 
     public ExchangeRate createExchangeRate(String baseCode, String targetCode, BigDecimal rate)
-            throws DatabaseException, NotFoundException, ValidationException {
+            throws DatabaseException, NotFoundException, ValidationException, AlreadyExistsException {
         try {
             Currency base = currencyService.findCurrencyByCode(baseCode);
             Currency target = currencyService.findCurrencyByCode(targetCode);
@@ -66,14 +65,12 @@ public class ExchangeRateService {
                 log.warn("Attempt to create exchange rate with non-positive rate: {}", rate);
                 throw new ValidationException("Rate must be positive");
             }
-            Optional<ExchangeRate> existing = exchangeRateDao.findByPair(baseCode, targetCode);
-            if (existing.isPresent()) {
-                log.warn("Attempt to create duplicate exchange rate for pair {}-{}", baseCode, targetCode);
-                throw new ValidationException("Exchange rate for pair " + baseCode + "-" + targetCode + " already exists");
-            }
             ExchangeRate exchangeRate = new ExchangeRate(base, target, rate);
             return exchangeRateDao.save(exchangeRate);
-        } catch (SQLException e) {
+        } catch (AlreadyExistsException e) {
+                log.warn("Attempt to create duplicate exchange rate for pair {}-{}", baseCode, targetCode);
+                throw e;
+        } catch (DatabaseException e) {
             log.error("Database error while creating exchange rate for pair {}-{}", baseCode, targetCode, e);
             throw new DatabaseException("Database error while creating exchange rate", e);
         }
@@ -84,12 +81,11 @@ public class ExchangeRateService {
         try {
             ExchangeRate existing = findExchangeRateByPair(baseCode, targetCode);
             if (newRate == null || newRate.compareTo(BigDecimal.ZERO) <= 0) {
-                log.warn("Attempt to update exchange rate with non-positive rate: {}", newRate);
                 throw new ValidationException("Rate must be positive");
             }
             existing.setRate(newRate);
             exchangeRateDao.update(existing);
-        } catch (SQLException e) {
+        } catch (DatabaseException e) {
             log.error("Database error while updating exchange rate for pair {}-{}", baseCode, targetCode, e);
             throw new DatabaseException("Database error while updating exchange rate", e);
         }

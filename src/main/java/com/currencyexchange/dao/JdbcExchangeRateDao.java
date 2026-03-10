@@ -1,5 +1,7 @@
 package com.currencyexchange.dao;
 
+import com.currencyexchange.exception.AlreadyExistsException;
+import com.currencyexchange.exception.DatabaseException;
 import com.currencyexchange.model.ExchangeRate;
 import com.currencyexchange.util.DatabaseConnection;
 import com.currencyexchange.mapper.ResultSetMapper;
@@ -35,7 +37,7 @@ public class JdbcExchangeRateDao implements ExchangeRateDao {
             "INSERT INTO exchange_rates (base_currency_id, target_currency_id, rate) VALUES (?, ?, ?)";
     private static final String SQL_UPDATE_BY_ID = "UPDATE exchange_rates SET rate = ? WHERE id = ?";
 
-    public List<ExchangeRate> findAll() throws SQLException {
+    public List<ExchangeRate> findAll() throws DatabaseException {
         List<ExchangeRate> list = new ArrayList<>();
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
@@ -43,11 +45,13 @@ public class JdbcExchangeRateDao implements ExchangeRateDao {
             while (rs.next()) {
                 list.add(ResultSetMapper.mapExchangeRate(rs));
             }
-        }
         return list;
+    } catch (SQLException e) {
+        throw new DatabaseException("Failed to fetch all exchange rates", e);
+    }
     }
 
-    public Optional<ExchangeRate> findById(Integer id) throws SQLException {
+    public Optional<ExchangeRate> findById(Integer id) throws DatabaseException {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SQL_FIND_BY_ID)) {
             pstmt.setInt(1, id);
@@ -56,10 +60,12 @@ public class JdbcExchangeRateDao implements ExchangeRateDao {
                         ? Optional.of(ResultSetMapper.mapExchangeRate(rs))
                         : Optional.empty();
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to fetch exchange rate by id: " + id, e);
         }
     }
 
-    public Optional<ExchangeRate> findByPair(String baseCode, String targetCode) throws SQLException {
+    public Optional<ExchangeRate> findByPair(String baseCode, String targetCode) throws DatabaseException {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SQL_FIND_BY_PAIR)) {
             pstmt.setString(1, baseCode.toUpperCase());
@@ -69,12 +75,14 @@ public class JdbcExchangeRateDao implements ExchangeRateDao {
                         ? Optional.of(ResultSetMapper.mapExchangeRate(rs))
                         : Optional.empty();
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to fetch exchange rate by pair: " + baseCode + "-" + targetCode, e);
         }
     }
 
-    public ExchangeRate save(ExchangeRate rate) throws SQLException {
+    public ExchangeRate save(ExchangeRate rate) throws DatabaseException, AlreadyExistsException {
         if (rate.getBaseCurrency().getId() == null || rate.getTargetCurrency().getId() == null) {
-            throw new SQLException("Cannot save exchange rate: currency ID is missing");
+            throw new DatabaseException("Cannot save exchange rate: currency ID is missing", null);
         }
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS)) {
@@ -90,15 +98,22 @@ public class JdbcExchangeRateDao implements ExchangeRateDao {
                 }
             }
             return rate;
+        } catch (SQLException e) {
+            if (e.getMessage().contains("UNIQUE constraint failed")) {
+                throw new AlreadyExistsException("Exchange rate for pair " + rate.getBaseCurrency().getCode() + "-" + rate.getTargetCurrency().getCode() + " already exists");
+            }
+            throw new DatabaseException("Failed to save exchange rate", e);
         }
     }
 
-    public boolean update(ExchangeRate rate) throws SQLException {
+    public boolean update(ExchangeRate rate) throws DatabaseException {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SQL_UPDATE_BY_ID)) {
             pstmt.setBigDecimal(1, rate.getRate());
             pstmt.setInt(2, rate.getId());
             return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to update exchange rate", e);
         }
     }
 }

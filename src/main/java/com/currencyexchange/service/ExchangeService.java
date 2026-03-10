@@ -1,6 +1,6 @@
 package com.currencyexchange.service;
 
-import com.currencyexchange.dto.response.ConversionResponseDto;
+import com.currencyexchange.dto.response.ExchangeResponseDto;
 import com.currencyexchange.dto.response.CurrencyResponseDto;
 import com.currencyexchange.exception.DatabaseException;
 import com.currencyexchange.exception.NotFoundException;
@@ -14,43 +14,43 @@ import java.math.RoundingMode;
 import java.util.Optional;
 
 @Slf4j
-public class ConversionService {
+public class ExchangeService {
     private static final String USD_CODE = "USD";
 
     private final ExchangeRateService exchangeRateService;
     private final CurrencyService currencyService;
 
-    public ConversionService() {
+    public ExchangeService() {
         this.exchangeRateService = new ExchangeRateService();
         this.currencyService = new CurrencyService();
     }
 
-    public ConversionService(ExchangeRateService exchangeRateService, CurrencyService currencyService) {
+    public ExchangeService(ExchangeRateService exchangeRateService, CurrencyService currencyService) {
         this.exchangeRateService = exchangeRateService;
         this.currencyService = currencyService;
     }
 
 
-    public ConversionResponseDto convert(String fromCode, String toCode, BigDecimal amount)
+    public ExchangeResponseDto convert(String fromCode, String toCode, BigDecimal amount)
             throws NotFoundException, DatabaseException {
 
         log.info("Конвертация {} из {} в {}", amount, fromCode, toCode);
         Currency from = currencyService.findCurrencyByCode(fromCode);
         Currency to = currencyService.findCurrencyByCode(toCode);
 
-        Optional<ConversionResponseDto> direct = findDirect(from, to, amount);
+        Optional<ExchangeResponseDto> direct = findDirect(from, to, amount);
         if (direct.isPresent()) {
             log.debug("Использован прямой курс {}-{}", fromCode, toCode);
             return direct.get();
         }
 
-        Optional<ConversionResponseDto> reverse = findReverse(from, to, amount);
+        Optional<ExchangeResponseDto> reverse = findReverse(from, to, amount);
         if (reverse.isPresent()) {
             log.debug("Использован обратный курс {}-{}", fromCode, toCode);
             return reverse.get();
         }
 
-        Optional<ConversionResponseDto> cross = findCross(from, to, amount);
+        Optional<ExchangeResponseDto> cross = findCross(from, to, amount);
         if (cross.isPresent()) {
             log.debug("Использован кросс-курс через USD для пары {}-{}", fromCode, toCode);
             return cross.get();
@@ -60,7 +60,7 @@ public class ConversionService {
         throw new NotFoundException("Exchange rate not found for pair " + fromCode + "-" + toCode);
     }
 
-    private Optional<ConversionResponseDto> findDirect(Currency from, Currency to, BigDecimal amount)
+    private Optional<ExchangeResponseDto> findDirect(Currency from, Currency to, BigDecimal amount)
             throws DatabaseException {
         try {
             ExchangeRate rate = exchangeRateService.findExchangeRateByPair(from.getCode(), to.getCode());
@@ -72,7 +72,7 @@ public class ConversionService {
         }
     }
 
-    private Optional<ConversionResponseDto> findReverse(Currency from, Currency to, BigDecimal amount)
+    private Optional<ExchangeResponseDto> findReverse(Currency from, Currency to, BigDecimal amount)
             throws DatabaseException {
         try {
             ExchangeRate rate = exchangeRateService.findExchangeRateByPair(to.getCode(), from.getCode());
@@ -85,7 +85,7 @@ public class ConversionService {
         }
     }
 
-    private Optional<ConversionResponseDto> findCross(Currency from, Currency to, BigDecimal amount)
+    private Optional<ExchangeResponseDto> findCross(Currency from, Currency to, BigDecimal amount)
             throws DatabaseException {
         try {
             ExchangeRate usdToFrom = exchangeRateService.findExchangeRateByPair(USD_CODE, from.getCode());
@@ -105,11 +105,11 @@ public class ConversionService {
         }
     }
 
-    private ConversionResponseDto buildConversionResponse(Currency from, Currency to, BigDecimal rate, BigDecimal amount) {
+    private ExchangeResponseDto buildConversionResponse(Currency from, Currency to, BigDecimal rate, BigDecimal amount) {
         CurrencyResponseDto fromDto = CurrencyMapper.toDto(from);
         CurrencyResponseDto toDto = CurrencyMapper.toDto(to);
         BigDecimal convertedAmount = amount.multiply(rate).setScale(2, RoundingMode.HALF_UP);
         log.debug("Конвертировано {} {} в {} {}", amount, from.getCode(), convertedAmount, to.getCode());
-        return new ConversionResponseDto(fromDto, toDto, rate, amount, convertedAmount);
+        return new ExchangeResponseDto(fromDto, toDto, rate, amount, convertedAmount);
     }
 }
