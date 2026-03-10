@@ -4,6 +4,7 @@ import com.currencyexchange.dto.response.ConversionResponseDto;
 import com.currencyexchange.dto.response.CurrencyResponseDto;
 import com.currencyexchange.exception.DatabaseException;
 import com.currencyexchange.exception.NotFoundException;
+import com.currencyexchange.mapper.CurrencyMapper;
 import com.currencyexchange.model.Currency;
 import com.currencyexchange.model.ExchangeRate;
 import lombok.extern.slf4j.Slf4j;
@@ -105,11 +106,10 @@ public class ConversionService {
     }
 
     private ConversionResponseDto buildConversionResponse(Currency from, Currency to, BigDecimal rate, BigDecimal amount) {
-        CurrencyResponseDto fromDto = new CurrencyResponseDto(from.getId(), from.getCode(), from.getName(), from.getSign());
-        CurrencyResponseDto toDto = new CurrencyResponseDto(to.getId(), to.getCode(), to.getName(), to.getSign());
+        CurrencyResponseDto fromDto = CurrencyMapper.toDto(from);
+        CurrencyResponseDto toDto = CurrencyMapper.toDto(to);
         BigDecimal convertedAmount = amount.multiply(rate).setScale(2, RoundingMode.HALF_UP);
-        ConversionResponseDto response = new ConversionResponseDto(fromDto, toDto, rate, amount, convertedAmount);
-        log.debug("Результат конвертации: {}", response);
-        return response;
+        log.debug("Конвертировано {} {} в {} {}", amount, from.getCode(), convertedAmount, to.getCode());
+        return new ConversionResponseDto(fromDto, toDto, rate, amount, convertedAmount);
     }
 }

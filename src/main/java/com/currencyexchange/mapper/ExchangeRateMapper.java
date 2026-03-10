@@ -9,18 +9,8 @@ import lombok.experimental.UtilityClass;
 public class ExchangeRateMapper {
 
     public static ExchangeRateResponseDto toDto(ExchangeRate rate) {
-        CurrencyResponseDto base = new CurrencyResponseDto(
-                rate.getBaseCurrency().getId(),
-                rate.getBaseCurrency().getCode(),
-                rate.getBaseCurrency().getName(),
-                rate.getBaseCurrency().getSign()
-        );
-        CurrencyResponseDto target = new CurrencyResponseDto(
-                rate.getTargetCurrency().getId(),
-                rate.getTargetCurrency().getCode(),
-                rate.getTargetCurrency().getName(),
-                rate.getTargetCurrency().getSign()
-        );
+        CurrencyResponseDto base = CurrencyMapper.toDto(rate.getBaseCurrency());
+        CurrencyResponseDto target = CurrencyMapper.toDto(rate.getTargetCurrency());
         return new ExchangeRateResponseDto(rate.getId(), base, target, rate.getRate());
     }
 }
