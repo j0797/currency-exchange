@@ -1,5 +1,6 @@
 package com.currencyexchange.servlet;
 
+import com.currencyexchange.dto.request.CurrencyRequestDto;
 import com.currencyexchange.dto.response.CurrencyResponseDto;
 import com.currencyexchange.exception.DatabaseException;
 import com.currencyexchange.exception.ValidationException;
@@ -41,14 +42,9 @@ public class CurrenciesServlet extends AbstractServlet {
             String fullName = req.getParameter("name");
             String sign = req.getParameter("sign");
 
-            if (code == null || fullName == null || sign == null) {
-                throw new ValidationException("A required field is missing");
-            }
-            if (code.trim().isEmpty() || fullName.trim().isEmpty() || sign.trim().isEmpty()) {
-                throw new ValidationException("Fields cannot be empty or contain only spaces");
-            }
+            CurrencyRequestDto requestDto = new CurrencyRequestDto(code, fullName, sign);
 
-            Currency currency = new Currency(code, fullName, sign);
+            Currency currency = new Currency(requestDto.code(), requestDto.name(), requestDto.sign());
             Currency created = currencyService.createCurrency(currency);
             CurrencyResponseDto responseDto = CurrencyMapper.toDto(created);
             writeJson(resp, responseDto, HttpServletResponse.SC_CREATED);

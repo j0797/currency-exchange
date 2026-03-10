@@ -1,14 +1,21 @@
 package com.currencyexchange.dto.request;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import com.currencyexchange.exception.ValidationException;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class CurrencyRequestDto {
-    private String code;
-    private String fullName;
-    private String sign;
+public record CurrencyRequestDto(String code, String name, String sign) {
+
+    public CurrencyRequestDto {
+        if (code == null || code.trim().isEmpty()) {
+            throw new ValidationException("Currency code is required");
+        }
+        if (name == null || name.trim().isEmpty()) {
+            throw new ValidationException("Currency name is required");
+        }
+        if (sign == null || sign.trim().isEmpty()) {
+            throw new ValidationException("Currency sign is required");
+        }
+        if (code.trim().length() != 3) {
+            throw new ValidationException("Currency code must be exactly 3 characters");
+        }
+    }
 }

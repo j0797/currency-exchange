@@ -1,5 +1,6 @@
 package com.currencyexchange.servlet;
 
+import com.currencyexchange.dto.request.ExchangeRateRequestDto;
 import com.currencyexchange.dto.response.ExchangeRateResponseDto;
 import com.currencyexchange.exception.DatabaseException;
 import com.currencyexchange.exception.NotFoundException;
@@ -40,19 +41,10 @@ public class ExchangeRatesServlet extends AbstractServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String baseCurrencyCode = null;
-        String targetCurrencyCode = null;
         try {
-            baseCurrencyCode = req.getParameter("baseCurrencyCode");
-            targetCurrencyCode = req.getParameter("targetCurrencyCode");
+            String baseCurrencyCode = req.getParameter("baseCurrencyCode");
+            String targetCurrencyCode = req.getParameter("targetCurrencyCode");
             String rateParam = req.getParameter("rate");
-
-            if (baseCurrencyCode == null || targetCurrencyCode == null || rateParam == null) {
-                throw new ValidationException("Missing required fields");
-            }
-            if (baseCurrencyCode.trim().isEmpty() || targetCurrencyCode.trim().isEmpty()) {
-                throw new ValidationException("Currency codes cannot be empty or contain only spaces");
-            }
 
             BigDecimal rate;
             try {
@@ -61,8 +53,13 @@ public class ExchangeRatesServlet extends AbstractServlet {
                 throw new ValidationException("Invalid rate format");
             }
 
-            ExchangeRate created = exchangeRateService.createExchangeRate(baseCurrencyCode, targetCurrencyCode, rate);
-            log.info("Exchange rate created for {}-{} with rate {}", baseCurrencyCode, targetCurrencyCode, rate);
+            ExchangeRateRequestDto requestDto = new ExchangeRateRequestDto(baseCurrencyCode, targetCurrencyCode, rate);
+
+            ExchangeRate created = exchangeRateService.createExchangeRate(
+                    requestDto.baseCurrencyCode(),
+                    requestDto.targetCurrencyCode(),
+                    requestDto.rate()
+            );
             ExchangeRateResponseDto responseDto = ExchangeRateMapper.toDto(created);
             writeJson(resp, responseDto, HttpServletResponse.SC_CREATED);
         } catch (ValidationException e) {
@@ -74,7 +71,7 @@ public class ExchangeRatesServlet extends AbstractServlet {
         } catch (NotFoundException e) {
             sendError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (DatabaseException e) {
-            log.error("Database error while creating exchange rate for {}-{}", baseCurrencyCode, targetCurrencyCode, e);
+            log.error("Database error in POST /exchangeRates", e);
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
         }
     }

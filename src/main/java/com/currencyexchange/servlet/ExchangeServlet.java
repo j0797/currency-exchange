@@ -44,7 +44,7 @@ public class ExchangeServlet extends AbstractServlet {
 
         try {
             ConversionResponseDto result = conversionService.convert(from.toUpperCase(), to.toUpperCase(), amount);
-            log.info("Conversion successful: {} {} -> {} {}", amount, from, result.getConvertedAmount(), to);
+            log.info("Conversion successful: {} {} -> {} {}", amount, from, result.convertedAmount(), to);
             writeJson(response, result, HttpServletResponse.SC_OK);
         } catch (NotFoundException e) {
             sendError(response, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
