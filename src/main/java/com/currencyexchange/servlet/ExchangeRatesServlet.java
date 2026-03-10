@@ -46,6 +46,10 @@ public class ExchangeRatesServlet extends AbstractServlet {
             String targetCurrencyCode = req.getParameter("targetCurrencyCode");
             String rateParam = req.getParameter("rate");
 
+            if (baseCurrencyCode == null || targetCurrencyCode == null || rateParam == null) {
+                throw new ValidationException("Missing required fields");
+            }
+
             BigDecimal rate;
             try {
                 rate = new BigDecimal(rateParam);
