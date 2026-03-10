@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class CurrencyDAO {
+public class JdbcCurrencyDao implements CurrencyDao {
     private static final String SQL_FIND_ALL = "SELECT id, code, full_name, sign FROM currencies";
     private static final String SQL_FIND_BY_CODE = "SELECT id, code, full_name, sign FROM currencies WHERE code = ?";
     private static final String SQL_FIND_BY_ID = "SELECT id, code, full_name, sign FROM currencies WHERE id = ?";
@@ -37,7 +37,7 @@ public class CurrencyDAO {
         }
     }
 
-    public Optional<Currency> findById(int id) throws SQLException {
+    public Optional<Currency> findById(Integer id) throws SQLException {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SQL_FIND_BY_ID)) {
             pstmt.setInt(1, id);

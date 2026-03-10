@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ExchangeRateDAO {
+public class JdbcExchangeRateDao implements ExchangeRateDao {
 
 
     private static final String SQL_SELECT_ALL = """
@@ -47,7 +47,7 @@ public class ExchangeRateDAO {
         return list;
     }
 
-    public Optional<ExchangeRate> findById(int id) throws SQLException {
+    public Optional<ExchangeRate> findById(Integer id) throws SQLException {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SQL_FIND_BY_ID)) {
             pstmt.setInt(1, id);

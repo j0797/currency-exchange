@@ -1,6 +1,7 @@
 package com.currencyexchange.service;
 
-import com.currencyexchange.dao.ExchangeRateDAO;
+import com.currencyexchange.dao.ExchangeRateDao;
+import com.currencyexchange.dao.JdbcExchangeRateDao;
 import com.currencyexchange.exception.DatabaseException;
 import com.currencyexchange.exception.NotFoundException;
 import com.currencyexchange.exception.ValidationException;
@@ -15,13 +16,13 @@ import java.util.Optional;
 
 @Slf4j
 public class ExchangeRateService {
-    private final ExchangeRateDAO exchangeRateDAO = new ExchangeRateDAO();
+    private final ExchangeRateDao exchangeRateDao = new JdbcExchangeRateDao();
     private final CurrencyService currencyService = new CurrencyService();
 
     public List<ExchangeRate> findAllExchangeRates() throws DatabaseException {
         log.info("Fetching all exchange rates");
         try {
-            return exchangeRateDAO.findAll();
+            return exchangeRateDao.findAll();
         } catch (SQLException e) {
             log.error("Database error while fetching all exchange rates", e);
             throw new DatabaseException("Database error while fetching all exchange rates", e);
@@ -29,9 +30,9 @@ public class ExchangeRateService {
     }
 
     public ExchangeRate findExchangeRateById(int id) throws DatabaseException, NotFoundException {
-        log.info("Finding currency by id: {}", id);
+        log.info("Finding exchange rate by id: {}", id);
         try {
-            return exchangeRateDAO.findById(id)
+            return exchangeRateDao.findById(id)
                     .orElseThrow(() -> new NotFoundException("Exchange rate not found with id: " + id));
         } catch (SQLException e) {
             log.error("Database error while fetching exchange rate by id: {}", id, e);
@@ -43,7 +44,7 @@ public class ExchangeRateService {
             throws DatabaseException, NotFoundException {
         log.info("Finding exchange rate for pair: {}-{}", baseCode, targetCode);
         try {
-            return exchangeRateDAO.findByPair(baseCode, targetCode)
+            return exchangeRateDao.findByPair(baseCode, targetCode)
                     .orElseThrow(() -> new NotFoundException(
                             "Exchange rate not found for pair " + baseCode + "-" + targetCode));
         } catch (SQLException e) {
@@ -65,13 +66,13 @@ public class ExchangeRateService {
                 log.warn("Attempt to create exchange rate with non-positive rate: {}", rate);
                 throw new ValidationException("Rate must be positive");
             }
-            Optional<ExchangeRate> existing = exchangeRateDAO.findByPair(baseCode, targetCode);
+            Optional<ExchangeRate> existing = exchangeRateDao.findByPair(baseCode, targetCode);
             if (existing.isPresent()) {
                 log.warn("Attempt to create duplicate exchange rate for pair {}-{}", baseCode, targetCode);
                 throw new ValidationException("Exchange rate for pair " + baseCode + "-" + targetCode + " already exists");
             }
             ExchangeRate exchangeRate = new ExchangeRate(base, target, rate);
-            return exchangeRateDAO.save(exchangeRate);
+            return exchangeRateDao.save(exchangeRate);
         } catch (SQLException e) {
             log.error("Database error while creating exchange rate for pair {}-{}", baseCode, targetCode, e);
             throw new DatabaseException("Database error while creating exchange rate", e);
@@ -87,7 +88,7 @@ public class ExchangeRateService {
                 throw new ValidationException("Rate must be positive");
             }
             existing.setRate(newRate);
-            exchangeRateDAO.update(existing);
+            exchangeRateDao.update(existing);
         } catch (SQLException e) {
             log.error("Database error while updating exchange rate for pair {}-{}", baseCode, targetCode, e);
             throw new DatabaseException("Database error while updating exchange rate", e);
