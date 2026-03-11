@@ -29,8 +29,8 @@ public class Validator {
     public static void validateCurrencySign(String sign) throws ValidationException {
         requireNonNullOrBlank(sign, "Currency sign");
         String trimmed = sign.trim();
-        if (trimmed.length() > 5) {
-            throw new ValidationException("Currency sign is too long (max 5 characters)");
+        if (trimmed.length() > 3) {
+            throw new ValidationException("Currency sign is too long (max 3 characters)");
         }
     }
 
