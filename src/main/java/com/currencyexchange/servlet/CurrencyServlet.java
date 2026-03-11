@@ -39,7 +39,7 @@ public class CurrencyServlet extends AbstractServlet {
 
     private String parseCurrencyCode(String pathInfo) throws ValidationException {
         if (pathInfo == null || pathInfo.length() != 4) {
-            throw new ValidationException("Invalid currency code format. Expected e.g. /currency/USDEUR");
+            throw new ValidationException("Invalid currency code format. Expected e.g. /currency/USD");
         }
         String code = pathInfo.substring(1);
         if (code.length() != 3) {
