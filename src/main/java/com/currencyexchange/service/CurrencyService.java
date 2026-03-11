@@ -7,6 +7,7 @@ import com.currencyexchange.exception.DatabaseException;
 import com.currencyexchange.exception.NotFoundException;
 import com.currencyexchange.exception.ValidationException;
 import com.currencyexchange.model.Currency;
+import com.currencyexchange.util.Validator;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -66,17 +67,8 @@ public class CurrencyService {
     }
 
     private void validateCurrency(Currency currency) throws ValidationException {
-        if (currency.getCode() == null || currency.getCode().length() != 3) {
-            throw new ValidationException("Currency code must be exactly 3 characters");
-        }
-        if (currency.getName() == null || currency.getName().isBlank()) {
-            throw new ValidationException("Currency full name is required");
-        }
-        if (currency.getSign() == null || currency.getSign().isBlank()) {
-            throw new ValidationException("Currency sign is required");
-        }
-        if (currency.getSign().length() > 3) {
-            throw new ValidationException("Currency sign is too long (max 3 characters)");
-        }
+        Validator.validateCurrencyCode(currency.getCode());
+        Validator.validateCurrencyName(currency.getName());
+        Validator.validateCurrencySign(currency.getSign());
     }
 }

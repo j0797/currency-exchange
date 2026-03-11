@@ -7,6 +7,7 @@ import com.currencyexchange.exception.ValidationException;
 import com.currencyexchange.mapper.ExchangeRateMapper;
 import com.currencyexchange.model.ExchangeRate;
 import com.currencyexchange.service.ExchangeRateService;
+import com.currencyexchange.util.Validator;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -105,6 +106,8 @@ public class ExchangeRateServlet extends AbstractServlet {
         String pair = pathInfo.substring(1);
         String baseCode = pair.substring(0, 3);
         String targetCode = pair.substring(3);
+        Validator.validateCurrencyCode(baseCode);
+        Validator.validateCurrencyCode(targetCode);
         return new String[]{baseCode, targetCode};
     }
 }

@@ -8,6 +8,7 @@ import com.currencyexchange.exception.ValidationException;
 import com.currencyexchange.mapper.ExchangeRateMapper;
 import com.currencyexchange.model.ExchangeRate;
 import com.currencyexchange.service.ExchangeRateService;
+import com.currencyexchange.exception.AlreadyExistsException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -50,6 +51,9 @@ public class ExchangeRatesServlet extends AbstractServlet {
                 throw new ValidationException("Missing required fields");
             }
 
+            baseCurrencyCode = baseCurrencyCode.trim();
+            targetCurrencyCode = targetCurrencyCode.trim();
+
             BigDecimal rate;
             try {
                 rate = new BigDecimal(rateParam);
@@ -66,12 +70,10 @@ public class ExchangeRatesServlet extends AbstractServlet {
             );
             ExchangeRateResponseDto responseDto = ExchangeRateMapper.toDto(created);
             writeJson(resp, responseDto, HttpServletResponse.SC_CREATED);
-        } catch (ValidationException e) {
-            if (e.getMessage().contains("already exists")) {
+        } catch (AlreadyExistsException e) {
                 sendError(resp, HttpServletResponse.SC_CONFLICT, e.getMessage());
-            } else {
+        } catch (ValidationException e) {
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            }
         } catch (NotFoundException e) {
             sendError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (DatabaseException e) {

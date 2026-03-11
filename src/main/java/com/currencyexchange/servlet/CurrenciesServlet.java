@@ -7,10 +7,12 @@ import com.currencyexchange.exception.ValidationException;
 import com.currencyexchange.mapper.CurrencyMapper;
 import com.currencyexchange.model.Currency;
 import com.currencyexchange.service.CurrencyService;
+import com.currencyexchange.exception.AlreadyExistsException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+
 
 import java.io.IOException;
 import java.util.List;
@@ -42,18 +44,19 @@ public class CurrenciesServlet extends AbstractServlet {
             String fullName = req.getParameter("name");
             String sign = req.getParameter("sign");
 
-            CurrencyRequestDto requestDto = new CurrencyRequestDto(code, fullName, sign);
+            code = (code != null) ? code.trim() : null;
+            fullName = (fullName != null) ? fullName.trim() : null;
+            sign = (sign != null) ? sign.trim() : null;
 
+            CurrencyRequestDto requestDto = new CurrencyRequestDto(code, fullName, sign);
             Currency currency = new Currency(requestDto.code(), requestDto.name(), requestDto.sign());
             Currency created = currencyService.createCurrency(currency);
             CurrencyResponseDto responseDto = CurrencyMapper.toDto(created);
             writeJson(resp, responseDto, HttpServletResponse.SC_CREATED);
+        } catch (AlreadyExistsException e) {
+            sendError(resp, HttpServletResponse.SC_CONFLICT, e.getMessage());
         } catch (ValidationException e) {
-            if (e.getMessage().contains("already exists")) {
-                sendError(resp, HttpServletResponse.SC_CONFLICT, e.getMessage());
-            } else {
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            }
         } catch (DatabaseException e) {
             log.error("Database error in POST /currencies", e);
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");

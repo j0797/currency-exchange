@@ -41,13 +41,7 @@ public class CurrencyServlet extends AbstractServlet {
         if (pathInfo == null || pathInfo.length() != 4) {
             throw new ValidationException("Invalid currency code format. Expected e.g. /currency/USD");
         }
-        String code = pathInfo.substring(1);
-        if (code.length() != 3) {
-            throw new ValidationException("Currency code must be 3 characters");
-        }
-        if (!code.matches("[A-Z]{3}")) {
-            throw new ValidationException("Currency code must be three uppercase letters");
-        }
+        String code = pathInfo.substring(1).trim();
         return code;
     }
 }

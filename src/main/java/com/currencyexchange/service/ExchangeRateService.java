@@ -8,6 +8,7 @@ import com.currencyexchange.exception.NotFoundException;
 import com.currencyexchange.exception.ValidationException;
 import com.currencyexchange.model.Currency;
 import com.currencyexchange.model.ExchangeRate;
+import com.currencyexchange.util.Validator;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
@@ -54,17 +55,13 @@ public class ExchangeRateService {
 
     public ExchangeRate createExchangeRate(String baseCode, String targetCode, BigDecimal rate)
             throws DatabaseException, NotFoundException, ValidationException, AlreadyExistsException {
+
+        Validator.validateCurrencyPair(baseCode, targetCode);
+        Validator.validateRate(rate);
+
         try {
             Currency base = currencyService.findCurrencyByCode(baseCode);
             Currency target = currencyService.findCurrencyByCode(targetCode);
-            if (base.getId().equals(target.getId())) {
-                log.warn("Attempt to create exchange rate with same base and target currencies: {}-{}", baseCode, targetCode);
-                throw new ValidationException("Base and target currencies must be different");
-            }
-            if (rate == null || rate.compareTo(BigDecimal.ZERO) <= 0) {
-                log.warn("Attempt to create exchange rate with non-positive rate: {}", rate);
-                throw new ValidationException("Rate must be positive");
-            }
             ExchangeRate exchangeRate = new ExchangeRate(base, target, rate);
             return exchangeRateDao.save(exchangeRate);
         } catch (AlreadyExistsException e) {
@@ -78,11 +75,11 @@ public class ExchangeRateService {
 
     public void updateExchangeRate(String baseCode, String targetCode, BigDecimal newRate)
             throws DatabaseException, NotFoundException, ValidationException {
+
+        Validator.validateRate(newRate);
+
         try {
             ExchangeRate existing = findExchangeRateByPair(baseCode, targetCode);
-            if (newRate == null || newRate.compareTo(BigDecimal.ZERO) <= 0) {
-                throw new ValidationException("Rate must be positive");
-            }
             existing.setRate(newRate);
             exchangeRateDao.update(existing);
         } catch (DatabaseException e) {
