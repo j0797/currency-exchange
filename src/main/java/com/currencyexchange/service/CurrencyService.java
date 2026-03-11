@@ -1,7 +1,6 @@
 package com.currencyexchange.service;
 
 import com.currencyexchange.dao.CurrencyDao;
-import com.currencyexchange.dao.JdbcCurrencyDao;
 import com.currencyexchange.exception.AlreadyExistsException;
 import com.currencyexchange.exception.DatabaseException;
 import com.currencyexchange.exception.NotFoundException;
@@ -14,7 +13,11 @@ import java.util.List;
 
 @Slf4j
 public class CurrencyService {
-    private final CurrencyDao currencyDao = new JdbcCurrencyDao();
+    private final CurrencyDao currencyDao;
+
+    public CurrencyService(CurrencyDao currencyDao) {
+        this.currencyDao = currencyDao;
+    }
 
     public List<Currency> findAllCurrencies() throws DatabaseException {
         log.info("Fetching all currencies");

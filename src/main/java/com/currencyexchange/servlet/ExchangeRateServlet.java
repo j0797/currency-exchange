@@ -8,6 +8,7 @@ import com.currencyexchange.mapper.ExchangeRateMapper;
 import com.currencyexchange.model.ExchangeRate;
 import com.currencyexchange.service.ExchangeRateService;
 import com.currencyexchange.util.Validator;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,7 +23,16 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 @WebServlet("/exchangeRate/*")
 public class ExchangeRateServlet extends AbstractServlet {
-    private final ExchangeRateService exchangeRateService = new ExchangeRateService();
+    private ExchangeRateService exchangeRateService;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        exchangeRateService = (ExchangeRateService) getServletContext().getAttribute("exchangeRateService");
+        if (exchangeRateService == null) {
+            throw new IllegalStateException("exchangeRateService not initialized in servlet context");
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {

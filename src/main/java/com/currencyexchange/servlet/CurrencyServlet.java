@@ -7,6 +7,7 @@ import com.currencyexchange.exception.ValidationException;
 import com.currencyexchange.mapper.CurrencyMapper;
 import com.currencyexchange.model.Currency;
 import com.currencyexchange.service.CurrencyService;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,7 +18,16 @@ import java.io.IOException;
 @Slf4j
 @WebServlet("/currency/*")
 public class CurrencyServlet extends AbstractServlet {
-    private final CurrencyService currencyService = new CurrencyService();
+    private CurrencyService currencyService;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        currencyService = (CurrencyService) getServletContext().getAttribute("currencyService");
+        if (currencyService == null) {
+            throw new IllegalStateException("currencyService not initialized in servlet context");
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -41,7 +51,6 @@ public class CurrencyServlet extends AbstractServlet {
         if (pathInfo == null || pathInfo.length() != 4) {
             throw new ValidationException("Invalid currency code format. Expected e.g. /currency/USD");
         }
-        String code = pathInfo.substring(1).trim();
-        return code;
+        return pathInfo.substring(1).trim();
     }
 }

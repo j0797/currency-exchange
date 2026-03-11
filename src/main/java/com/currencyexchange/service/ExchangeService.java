@@ -20,16 +20,10 @@ public class ExchangeService {
     private final ExchangeRateService exchangeRateService;
     private final CurrencyService currencyService;
 
-    public ExchangeService() {
-        this.exchangeRateService = new ExchangeRateService();
-        this.currencyService = new CurrencyService();
-    }
-
     public ExchangeService(ExchangeRateService exchangeRateService, CurrencyService currencyService) {
         this.exchangeRateService = exchangeRateService;
         this.currencyService = currencyService;
     }
-
 
     public ExchangeResponseDto convert(String fromCode, String toCode, BigDecimal amount)
             throws NotFoundException, DatabaseException {
@@ -37,7 +31,6 @@ public class ExchangeService {
         log.info("Конвертация {} из {} в {}", amount, fromCode, toCode);
         Currency from = currencyService.findCurrencyByCode(fromCode);
         Currency to = currencyService.findCurrencyByCode(toCode);
-
         Optional<ExchangeResponseDto> direct = findDirect(from, to, amount);
         if (direct.isPresent()) {
             log.debug("Использован прямой курс {}-{}", fromCode, toCode);

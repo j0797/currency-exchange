@@ -4,6 +4,7 @@ import com.currencyexchange.dto.response.ExchangeResponseDto;
 import com.currencyexchange.exception.DatabaseException;
 import com.currencyexchange.exception.NotFoundException;
 import com.currencyexchange.service.ExchangeService;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,7 +16,16 @@ import java.math.BigDecimal;
 @Slf4j
 @WebServlet("/exchange")
 public class ExchangeServlet extends AbstractServlet {
-    private final ExchangeService conversionService = new ExchangeService();
+    private ExchangeService conversionService;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        conversionService = (ExchangeService) getServletContext().getAttribute("exchangeService");
+        if (conversionService == null) {
+            throw new IllegalStateException("exchangeService not initialized in servlet context");
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {

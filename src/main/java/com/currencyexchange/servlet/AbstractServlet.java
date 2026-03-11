@@ -2,13 +2,23 @@ package com.currencyexchange.servlet;
 
 import com.currencyexchange.dto.ErrorResponseDto;
 import com.google.gson.Gson;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
 public abstract class AbstractServlet extends HttpServlet {
-    protected final Gson gson = new Gson();
+    protected Gson gson;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        gson = (Gson) getServletContext().getAttribute("gson");
+        if (gson == null) {
+            throw new IllegalStateException("Gson not initialized in servlet context");
+        }
+    }
 
     protected void sendError(HttpServletResponse resp, int status, String message) throws IOException {
         resp.setStatus(status);

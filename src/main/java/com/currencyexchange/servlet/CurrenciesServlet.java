@@ -8,6 +8,7 @@ import com.currencyexchange.mapper.CurrencyMapper;
 import com.currencyexchange.model.Currency;
 import com.currencyexchange.service.CurrencyService;
 import com.currencyexchange.exception.AlreadyExistsException;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,7 +22,16 @@ import java.util.stream.Collectors;
 @Slf4j
 @WebServlet("/currencies")
 public class CurrenciesServlet extends AbstractServlet {
-    private final CurrencyService currencyService = new CurrencyService();
+    private  CurrencyService currencyService;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        currencyService = (CurrencyService) getServletContext().getAttribute("currencyService");
+        if (currencyService == null) {
+            throw new IllegalStateException("currencyService not initialized in servlet context");
+        }
+    }
 
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
