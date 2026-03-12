@@ -44,7 +44,7 @@ public class ExchangeRateServlet extends AbstractServlet {
             targetCode = codes[1];
 
             ExchangeRate rate = exchangeRateService.findExchangeRateByPair(baseCode, targetCode);
-            ExchangeRateResponseDto dto = ExchangeRateMapper.toDto(rate);
+            ExchangeRateResponseDto dto = ExchangeRateMapper.INSTANCE.toDto(rate);
             writeJson(resp, dto, HttpServletResponse.SC_OK);
         } catch (ValidationException e) {
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
@@ -97,7 +97,7 @@ public class ExchangeRateServlet extends AbstractServlet {
 
             exchangeRateService.updateExchangeRate(baseCode, targetCode, newRate);
             ExchangeRate updated = exchangeRateService.findExchangeRateByPair(baseCode, targetCode);
-            ExchangeRateResponseDto dto = ExchangeRateMapper.toDto(updated);
+            ExchangeRateResponseDto dto = ExchangeRateMapper.INSTANCE.toDto(updated);
             writeJson(resp, dto, HttpServletResponse.SC_OK);
         } catch (NotFoundException e) {
             sendError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());

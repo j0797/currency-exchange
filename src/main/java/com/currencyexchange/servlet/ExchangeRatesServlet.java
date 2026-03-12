@@ -40,7 +40,7 @@ public class ExchangeRatesServlet extends AbstractServlet {
             List<ExchangeRate> rates = exchangeRateService.findAllExchangeRates();
             log.debug("Returning {} exchange rates", rates.size());
             List<ExchangeRateResponseDto> responseList = rates.stream()
-                    .map(ExchangeRateMapper::toDto)
+                    .map(ExchangeRateMapper.INSTANCE::toDto)
                     .collect(Collectors.toList());
 
             writeJson(resp, responseList, HttpServletResponse.SC_OK);
@@ -78,7 +78,7 @@ public class ExchangeRatesServlet extends AbstractServlet {
                     requestDto.targetCurrencyCode(),
                     requestDto.rate()
             );
-            ExchangeRateResponseDto responseDto = ExchangeRateMapper.toDto(created);
+            ExchangeRateResponseDto responseDto = ExchangeRateMapper.INSTANCE.toDto(created);
             writeJson(resp, responseDto, HttpServletResponse.SC_CREATED);
         } catch (AlreadyExistsException e) {
                 sendError(resp, HttpServletResponse.SC_CONFLICT, e.getMessage());

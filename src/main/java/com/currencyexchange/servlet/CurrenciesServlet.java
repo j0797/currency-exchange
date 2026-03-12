@@ -37,7 +37,7 @@ public class CurrenciesServlet extends AbstractServlet {
         try {
             List<Currency> currencies = currencyService.findAllCurrencies();
             List<CurrencyResponseDto> responseList = currencies.stream()
-                    .map(CurrencyMapper::toDto)
+                    .map(CurrencyMapper.INSTANCE::toDto)
                     .collect(Collectors.toList());
 
             writeJson(resp, responseList, HttpServletResponse.SC_OK);
@@ -61,7 +61,7 @@ public class CurrenciesServlet extends AbstractServlet {
             CurrencyRequestDto requestDto = new CurrencyRequestDto(code, fullName, sign);
             Currency currency = new Currency(requestDto.code(), requestDto.name(), requestDto.sign());
             Currency created = currencyService.createCurrency(currency);
-            CurrencyResponseDto responseDto = CurrencyMapper.toDto(created);
+            CurrencyResponseDto responseDto = CurrencyMapper.INSTANCE.toDto(created);
             writeJson(resp, responseDto, HttpServletResponse.SC_CREATED);
         } catch (AlreadyExistsException e) {
             sendError(resp, HttpServletResponse.SC_CONFLICT, e.getMessage());

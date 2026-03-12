@@ -35,7 +35,7 @@ public class CurrencyServlet extends AbstractServlet {
         try {
             code = parseCurrencyCode(req.getPathInfo());
             Currency currency = currencyService.findCurrencyByCode(code);
-            CurrencyResponseDto dto = CurrencyMapper.toDto(currency);
+            CurrencyResponseDto dto = CurrencyMapper.INSTANCE.toDto(currency);
             writeJson(resp, dto, HttpServletResponse.SC_OK);
         } catch (ValidationException e) {
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());

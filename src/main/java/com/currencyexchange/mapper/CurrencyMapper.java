@@ -2,11 +2,12 @@ package com.currencyexchange.mapper;
 
 import com.currencyexchange.dto.response.CurrencyResponseDto;
 import com.currencyexchange.model.Currency;
-import lombok.experimental.UtilityClass;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
 
-@UtilityClass
-public class CurrencyMapper {
-    public static CurrencyResponseDto toDto(Currency currency) {
-        return new CurrencyResponseDto(currency.getId(), currency.getCode(), currency.getName(), currency.getSign());
-    }
+@Mapper
+public interface CurrencyMapper {
+    CurrencyMapper INSTANCE = Mappers.getMapper(CurrencyMapper.class);
+
+    CurrencyResponseDto toDto(Currency currency);
 }

@@ -99,8 +99,8 @@ public class ExchangeService {
     }
 
     private ExchangeResponseDto buildConversionResponse(Currency from, Currency to, BigDecimal rate, BigDecimal amount) {
-        CurrencyResponseDto fromDto = CurrencyMapper.toDto(from);
-        CurrencyResponseDto toDto = CurrencyMapper.toDto(to);
+        CurrencyResponseDto fromDto = CurrencyMapper.INSTANCE.toDto(from);
+        CurrencyResponseDto toDto = CurrencyMapper.INSTANCE.toDto(to);
         BigDecimal convertedAmount = amount.multiply(rate).setScale(2, RoundingMode.HALF_UP);
         log.debug("Конвертировано {} {} в {} {}", amount, from.getCode(), convertedAmount, to.getCode());
         return new ExchangeResponseDto(fromDto, toDto, rate, amount, convertedAmount);
