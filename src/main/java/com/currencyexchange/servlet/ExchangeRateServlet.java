@@ -1,8 +1,6 @@
 package com.currencyexchange.servlet;
 
 import com.currencyexchange.dto.response.ExchangeRateResponseDto;
-import com.currencyexchange.exception.DatabaseException;
-import com.currencyexchange.exception.NotFoundException;
 import com.currencyexchange.exception.ValidationException;
 import com.currencyexchange.mapper.ExchangeRateMapper;
 import com.currencyexchange.model.ExchangeRate;
@@ -36,77 +34,61 @@ public class ExchangeRateServlet extends AbstractServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String baseCode = null;
-        String targetCode = null;
-        try {
-            String[] codes = parseCurrencyPair(req.getPathInfo());
-            baseCode = codes[0];
-            targetCode = codes[1];
+        String baseCode;
+        String targetCode;
 
-            ExchangeRate rate = exchangeRateService.findExchangeRateByPair(baseCode, targetCode);
-            ExchangeRateResponseDto dto = ExchangeRateMapper.INSTANCE.toDto(rate);
-            writeJson(resp, dto, HttpServletResponse.SC_OK);
-        } catch (ValidationException e) {
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        } catch (NotFoundException e) {
-            sendError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-        } catch (DatabaseException e) {
-            log.error("Database error in GET /exchangeRate/{}{}", baseCode, targetCode, e);
-            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
-        }
+        String[] codes = parseCurrencyPair(req.getPathInfo());
+        baseCode = codes[0];
+        targetCode = codes[1];
+
+        ExchangeRate rate = exchangeRateService.findExchangeRateByPair(baseCode, targetCode);
+        ExchangeRateResponseDto dto = ExchangeRateMapper.INSTANCE.toDto(rate);
+        writeJson(resp, dto, HttpServletResponse.SC_OK);
     }
 
     @Override
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
-        String baseCode = null;
-        String targetCode = null;
-        try {
-            String[] codes = parseCurrencyPair(req.getPathInfo());
-            baseCode = codes[0];
-            targetCode = codes[1];
+        String baseCode;
+        String targetCode;
 
-            StringBuilder body = new StringBuilder();
-            String line;
-            try (BufferedReader reader = req.getReader()) {
-                while ((line = reader.readLine()) != null) {
-                    body.append(line);
-                }
-            }
-            String bodyStr = body.toString();
+        String[] codes = parseCurrencyPair(req.getPathInfo());
+        baseCode = codes[0];
+        targetCode = codes[1];
 
-            String rateParam = null;
-            String[] pairs = bodyStr.split("&");
-            for (String pair : pairs) {
-                String[] kv = pair.split("=");
-                if (kv.length == 2 && "rate".equals(kv[0])) {
-                    rateParam = URLDecoder.decode(kv[1], StandardCharsets.UTF_8);
-                    break;
-                }
+        StringBuilder body = new StringBuilder();
+        String line;
+        try (BufferedReader reader = req.getReader()) {
+            while ((line = reader.readLine()) != null) {
+                body.append(line);
             }
-
-            if (rateParam == null) {
-                throw new ValidationException("Missing 'rate' field");
-            }
-            BigDecimal newRate;
-            try {
-                newRate = new BigDecimal(rateParam);
-            } catch (NumberFormatException e) {
-                throw new ValidationException("Invalid rate format");
-            }
-
-            exchangeRateService.updateExchangeRate(baseCode, targetCode, newRate);
-            ExchangeRate updated = exchangeRateService.findExchangeRateByPair(baseCode, targetCode);
-            ExchangeRateResponseDto dto = ExchangeRateMapper.INSTANCE.toDto(updated);
-            writeJson(resp, dto, HttpServletResponse.SC_OK);
-        } catch (NotFoundException e) {
-            sendError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-        } catch (ValidationException e) {
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        } catch (DatabaseException e) {
-            log.error("Database error in PATCH /exchangeRate/{}{}", baseCode, targetCode, e);
-            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
         }
+        String bodyStr = body.toString();
+
+        String rateParam = null;
+        String[] pairs = bodyStr.split("&");
+        for (String pair : pairs) {
+            String[] kv = pair.split("=");
+            if (kv.length == 2 && "rate".equals(kv[0])) {
+                rateParam = URLDecoder.decode(kv[1], StandardCharsets.UTF_8);
+                break;
+            }
+        }
+
+        if (rateParam == null) {
+            throw new ValidationException("Missing 'rate' field");
+        }
+        BigDecimal newRate;
+        try {
+            newRate = new BigDecimal(rateParam);
+        } catch (NumberFormatException e) {
+            throw new ValidationException("Invalid rate format");
+        }
+
+        exchangeRateService.updateExchangeRate(baseCode, targetCode, newRate);
+        ExchangeRate updated = exchangeRateService.findExchangeRateByPair(baseCode, targetCode);
+        ExchangeRateResponseDto dto = ExchangeRateMapper.INSTANCE.toDto(updated);
+        writeJson(resp, dto, HttpServletResponse.SC_OK);
     }
 
     private String[] parseCurrencyPair(String pathInfo) throws ValidationException {

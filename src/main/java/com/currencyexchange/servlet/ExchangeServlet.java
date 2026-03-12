@@ -1,8 +1,7 @@
 package com.currencyexchange.servlet;
 
 import com.currencyexchange.dto.response.ExchangeResponseDto;
-import com.currencyexchange.exception.DatabaseException;
-import com.currencyexchange.exception.NotFoundException;
+import com.currencyexchange.exception.ValidationException;
 import com.currencyexchange.service.ExchangeService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -34,33 +33,23 @@ public class ExchangeServlet extends AbstractServlet {
         String amountStr = request.getParameter("amount");
 
         if (from == null || to == null || amountStr == null) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Missing required parameters: from, to, amount");
-            return;
+            throw new ValidationException("Missing required parameters: from, to, amount");
         }
 
         BigDecimal amount;
         try {
             amount = new BigDecimal(amountStr);
         } catch (NumberFormatException e) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid amount format");
-            return;
+            throw new ValidationException("Invalid amount format");
         }
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Amount must be positive");
-            return;
+            throw new ValidationException("Amount must be positive");
         }
 
         log.debug("Processing conversion: {} {} -> {}", amount, from, to);
 
-        try {
-            ExchangeResponseDto result = conversionService.convert(from.toUpperCase(), to.toUpperCase(), amount);
-            log.info("Conversion successful: {} {} -> {} {}", amount, from, result.convertedAmount(), to);
-            writeJson(response, result, HttpServletResponse.SC_OK);
-        } catch (NotFoundException e) {
-            sendError(response, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-        } catch (DatabaseException e) {
-            log.error("Database error in GET /exchange", e);
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
-        }
+        ExchangeResponseDto result = conversionService.convert(from.toUpperCase(), to.toUpperCase(), amount);
+        log.info("Conversion successful: {} {} -> {} {}", amount, from, result.convertedAmount(), to);
+        writeJson(response, result, HttpServletResponse.SC_OK);
     }
 }
